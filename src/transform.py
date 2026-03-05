@@ -6,8 +6,7 @@ RAW = BASE / "data" / "raw" / "voice_calls.csv"
 OUT = BASE / "data" / "processed" / "voice_calls_tratado.csv"
 
 def main():
-    df = pd.read_csv(RAW)
-
+    df = pd.read_csv(RAW, skiprows=1)
     df["Connect time"] = pd.to_datetime(df["Connect time"])
     df["Disconnect time"] = pd.to_datetime(df["Disconnect time"])
 
@@ -21,6 +20,7 @@ def main():
     df["DayOfWeek"] = df["Connect time"].dt.day_name()
 
     df["Amount, BRL"] = df["Amount, BRL"].astype(float)
+    df = df.drop(columns=["Account"], errors="ignore")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT, index=False)

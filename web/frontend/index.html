@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Voice Calls - Planilha Web</title>
+
+  <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
+
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+    .card { border:1px solid #e5e5e5; border-radius:12px; padding:12px 14px; min-width:180px; }
+    .k { font-size:12px; opacity:.7; }
+    .v { font-size:20px; font-weight:700; }
+    label { display:flex; flex-direction:column; gap:6px; font-size:12px; }
+    input, select { padding:8px 10px; border-radius:10px; border:1px solid #ddd; min-width:180px; }
+    button { padding:9px 12px; border-radius:10px; border:1px solid #ddd; background:#f7f7f7; cursor:pointer; }
+    #table { margin-top: 14px; }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
+    h2 { margin:0; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <h2>Voice Calls — Planilha Web</h2>
+    <div style="font-size:12px;opacity:.7">Fonte: voice_calls_tratado.csv</div>
+  </div>
+
+  <div class="row" style="margin-top:14px">
+    <label>Data inicial
+      <input id="start" type="date">
+    </label>
+    <label>Data final 
+      <input id="end" type="date">
+    </label>
+    <label>País
+      <select id="country">
+        <option value="">Todos</option>
+      </select>
+    </label>
+    <label>Buscar origem (From)
+  <input id="from_number" placeholder="ex: 2835...">
+</label>
+
+    <button id="apply">Aplicar filtros</button>
+    <button id="clear">Limpar</button>
+  </div>
+
+  <div class="row" style="margin-top:12px; align-items:center;">
+  <label>Tamanho da página
+    <select id="page_size">
+      <option value="100">100</option>
+      <option value="200" selected>200</option>
+      <option value="500">500</option>
+      <option value="1000">1000</option>
+    </select>
+  </label>
+
+  <button id="prev">⬅ Anterior</button>
+  <button id="next">Próximo ➡</button>
+
+  <div style="font-size:12px;opacity:.8" id="page_info">
+    Página -
+  </div>
+</div>
+
+  <div class="row" style="margin-top:14px">
+    <div class="card"><div class="k">Total gasto (R$)</div><div class="v" id="k_spend">-</div></div>
+    <div class="card"><div class="k">Chamadas</div><div class="v" id="k_calls">-</div></div>
+    <div class="card"><div class="k">Minutos</div><div class="v" id="k_minutes">-</div></div>
+    <div class="card"><div class="k">Custo médio/chamada</div><div class="v" id="k_avg">-</div></div>
+    <div class="card"><div class="k">Custo por minuto</div><div class="v" id="k_cpm">-</div></div>
+  </div>
+
+  <div id="table"></div>
+
+  <script>
+  let PAGE = 1;
+  let TOTAL_ROWS = 0;
+
+    const API = "http://localhost:8000";
+
+    const fmtMoney = (n) => (Number(n) || 0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+    const fmtNum = (n, d=0) => (Number(n) || 0).toLocaleString("pt-BR", { maximumFractionDigits:d, minimumFractionDigits:d });
+
+    const table = new Tabulator("#table", {
+      layout: "fitColumns",
+      height: "70vh",
+      pagination: false,
+      paginationSize: 50,
+      movableColumns: true,
+      resizableColumns: true,
+      placeholder: "Sem dados",
+      columns: [
+        {title:"Connect time", field:"Connect time", sorter:"string"},
+        {title:"Disconnect time", field:"Disconnect time", sorter:"string"},
+        {title:"From", field:"From", sorter:"string"},
+        {title:"To", field:"To", sorter:"string"},
+        {title:"Country", field:"Country", sorter:"string"},
+        {title:"Description", field:"Description", sorter:"string"},
+        {title:"Charged time", field:"Charged time, hour:min:sec", sorter:"string"},
+        {title:"DurationSeconds", field:"DurationSeconds", sorter:"number"},
+        {title:"Amount (BRL)", field:"Amount, BRL", sorter:"number", formatter:(cell)=>fmtMoney(cell.getValue())},
+      ],
+    });
+
+    async function loadCountries() {
+      const r = await fetch(`${API}/filters`);
+      const j = await r.json();
+      const sel = document.getElementById("country");
+      (j.countries || []).forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c;
+        opt.textContent = c;
+        sel.appendChild(opt);
+      });
+    }
+
+    function qs() {
+      const p = new URLSearchParams();
+
+      const start = document.getElementById("start").value;
+      const end = document.getElementById("end").value;
+      const country = document.getElementById("country").value;
+      const from_number = document.getElementById("from_number").value;
+      const page_size = document.getElementById("page_size").value;
+
+      if (start) p.set("start", start);
+      if (end) p.set("end", end);
+      if (country) p.set("country", country);
+      if (from_number) p.set("from_number", from_number);
+
+      p.set("page", String(PAGE));
+      p.set("page_size", String(page_size));
+
+      return `?${p.toString()}`;
+    }
+
+    function setKpis(k) {
+      document.getElementById("k_spend").textContent = fmtMoney(k.total_spend);
+      document.getElementById("k_calls").textContent = fmtNum(k.total_calls, 0);
+      document.getElementById("k_minutes").textContent = fmtNum(k.total_minutes, 1);
+      document.getElementById("k_avg").textContent = fmtMoney(k.avg_cost_per_call);
+      document.getElementById("k_cpm").textContent = fmtMoney(k.cost_per_minute);
+    }
+
+    async function loadData() {
+      const r = await fetch(`${API}/calls${qs()}`);
+      const j = await r.json();
+
+      setKpis(j.kpis);
+
+      TOTAL_ROWS = j.pagination?.total_rows || 0;
+      const pageSize = j.pagination?.page_size || Number(document.getElementById("page_size").value || 200);
+      const totalPages = Math.max(1, Math.ceil(TOTAL_ROWS / pageSize));
+
+      document.getElementById("page_info").textContent =
+        `Página ${PAGE} de ${totalPages} — ${TOTAL_ROWS.toLocaleString("pt-BR")} linhas`;
+
+      document.getElementById("prev").disabled = (PAGE <= 1);
+      document.getElementById("next").disabled = (PAGE >= totalPages);
+
+      table.setData(j.rows || []);
+    }
+
+    (async function init() {
+      await loadCountries();
+      await loadData();
+    })();
+
+    // Listeners
+document.getElementById("apply").addEventListener("click", () => {
+  PAGE = 1;
+  loadData();
+});
+
+document.getElementById("clear").addEventListener("click", () => {
+  document.getElementById("start").value = "";
+  document.getElementById("end").value = "";
+  document.getElementById("country").value = "";
+  document.getElementById("from_number").value = "";
+  PAGE = 1;
+  loadData();
+});
+
+document.getElementById("prev").addEventListener("click", () => {
+  if (PAGE > 1) {
+    PAGE -= 1;
+    loadData();
+  }
+});
+
+document.getElementById("next").addEventListener("click", () => {
+  PAGE += 1;
+  loadData();
+});
+
+document.getElementById("page_size").addEventListener("change", () => {
+  PAGE = 1;
+  loadData();
+});
+    
+  </script>
+</body>
+</html>

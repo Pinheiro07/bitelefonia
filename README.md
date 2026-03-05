@@ -1,96 +1,198 @@
-# 📊 BI Telefonia - ETL de Ligações Internacionais
+# 📊 BI Telefonia Web – Planilha Inteligente de Ligações
 
-Projeto para tratamento de logs de chamadas internacionais e geração de base estruturada para uso no Power BI.
-
----
-
-## 🎯 Objetivo
-
-Automatizar a transformação de logs brutos de chamadas em um dataset limpo e estruturado para análise financeira e operacional no Power BI.
+Sistema web simples e profissional para análise de chamadas internacionais, alimentado automaticamente pelo processamento dos logs.
 
 ---
 
-## 📁 Estrutura do Projeto
+# 🎯 Objetivo
 
+Transformar logs brutos de chamadas em uma **planilha web interativa**, com:
 
+* Filtros por período
+* Filtro por país
+* Filtro por número de origem (From)
+* KPIs automáticos
+* Ordenação e paginação
+* Atualização mensal simples
+
+Sem Excel. Sem Power BI. Tudo via navegador.
+
+---
+
+# 🏗 Arquitetura do Projeto
+
+```
 BI TELEFONIA/
 │
-├── src/
-│ └── transform.py
-│
 ├── data/
-│ ├── raw/
-│ │ └── voice_calls.csv ← Colocar o arquivo bruto aqui
-│ │
-│ └── processed/
-│ └── voice_calls_tratado.csv ← Arquivo gerado automaticamente
+│   ├── raw/
+│   │   └── voice_calls.csv              ← Arquivo bruto mensal
+│   │
+│   └── processed/
+│       └── voice_calls_tratado.csv      ← Gerado automaticamente
 │
-├── requirements.txt
-└── .gitignore
-
+├── src/
+│   └── transform.py                     ← ETL (tratamento do log)
+│
+├── web/
+│   ├── backend/
+│   │   ├── app.py                       ← API FastAPI
+│   │   └── __init__.py
+│   │
+│   └── frontend/
+│       └── index.html                   ← Planilha web
+│
+├── .venv/
+└── requirements.txt
+```
 
 ---
 
-## ⚙️ Requisitos
+# ⚙️ Tecnologias Utilizadas
 
-- Python 3.10+
-- Pandas
+* Python 3.10+
+* FastAPI
+* Pandas
+* Uvicorn
+* HTML + CSS
+* Tabulator.js (planilha web)
 
-Instalar dependências:
+---
 
-```bash
-pip install -r requirements.txt
-🚀 Como usar
-1️⃣ Coloque o arquivo bruto em:
+# 🚀 Como Executar o Sistema
+
+## 1️⃣ Ativar o ambiente virtual
+
+### CMD:
+
+```
+.\.venv\Scripts\activate.bat
+```
+
+### PowerShell:
+
+```
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\.venv\Scripts\Activate.ps1
+```
+
+---
+
+## 2️⃣ Gerar o arquivo tratado
+
+Coloque o arquivo bruto em:
+
+```
 data/raw/voice_calls.csv
-2️⃣ Execute o script:
-python src/transform.py
-3️⃣ O arquivo tratado será gerado em:
+```
+
+Depois execute:
+
+```
+python src\transform.py
+```
+
+Isso irá gerar:
+
+```
 data/processed/voice_calls_tratado.csv
-📈 Como conectar no Power BI
+```
 
-Abrir Power BI
+---
 
-Obter Dados → Texto/CSV
+## 3️⃣ Iniciar o servidor web
 
-Selecionar:
+```
+python -m uvicorn web.backend.app:app --reload
+```
 
-data/processed/voice_calls_tratado.csv
+Acesse no navegador:
 
-Carregar
+```
+http://127.0.0.1:8000
+```
 
-📊 Métricas sugeridas no Power BI
+---
 
-Total Gasto
+# 🔎 Funcionalidades da Planilha Web
 
-Total de Chamadas
+✔ Filtro por data (início e fim)
+✔ Filtro por país
+✔ Busca por número de origem (From)
+✔ KPIs automáticos:
 
-Total de Minutos
+* Total gasto (R$)
+* Total de chamadas
+* Total de minutos
+* Custo médio por chamada
+* Custo por minuto
 
-Custo Médio por Chamada
+✔ Ordenação por coluna
+✔ Paginação automática
+✔ Atualização automática após novo processamento
 
-Custo Médio por Minuto
+---
 
-Gasto por Dia
+# 🔄 Atualização Mensal (Fluxo Oficial)
 
-Gasto por Mês
+Todo mês:
 
-Top Números Mais Ligados
+1. Substituir:
 
-🔒 Observações
+   ```
+   data/raw/voice_calls.csv
+   ```
 
-A pasta data/raw e data/processed estão no .gitignore
+2. Rodar:
 
-Dados sensíveis não são versionados
+   ```
+   python src\transform.py
+   ```
 
-Apenas código sobe para o GitHub
+3. Atualizar o navegador (F5)
 
-🛠 Próximos Passos
+Pronto.
 
-Automatizar execução diária
+---
 
-Criar banco de dados
+# 🛠 Endpoints Disponíveis
 
-Deploy em servidor
+* `/` → Planilha Web
+* `/calls` → Dados + KPIs
+* `/filters` → Lista de países
+* `/debug` → Verificação do caminho do CSV
+* `/docs` → Documentação automática da API
 
-Criar pipeline CI/CD
+---
+
+# 📈 Próximas Evoluções Possíveis
+
+* Exportar Excel
+* Exportar CSV filtrado
+* Banco SQLite ao invés de CSV
+* Deploy em servidor interno
+* Deploy em VPS
+* Autenticação de usuários
+* Dashboard com gráficos adicionais
+
+---
+
+# 🔒 Segurança
+
+* Dados não são enviados para terceiros
+* Sistema roda localmente ou na rede interna
+* Pode ser hospedado em servidor privado
+
+---
+
+# 🧠 Resumo
+
+Você construiu um mini-BI web próprio:
+
+ETL → CSV Tratado → API → Planilha Interativa
+
+Sistema simples, eficiente e totalmente controlado por você.
+
+---
+
+Projeto desenvolvido para análise estratégica de custos de telefonia internacional.

@@ -4,3 +4,17 @@ __pycache__/
 data/raw/
 data/processed/
 .DS_Store
+
+# Banco local (não versionar)
+data/processed/*.db
+data/processed/*.sqlite
+data/processed/*.sqlite3
+
+# Controle/estado local
+data/processed/downloaded_files.txt
+data/raw/
+__pycache__/
+*.pyc
+.venv/
+
+data/processed/*.csv
