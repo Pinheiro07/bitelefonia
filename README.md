@@ -1,198 +1,163 @@
-# 📊 BI Telefonia Web – Planilha Inteligente de Ligações
+🏗 Arquitetura do projeto
 
-Sistema web simples e profissional para análise de chamadas internacionais, alimentado automaticamente pelo processamento dos logs.
-
----
-
-# 🎯 Objetivo
-
-Transformar logs brutos de chamadas em uma **planilha web interativa**, com:
-
-* Filtros por período
-* Filtro por país
-* Filtro por número de origem (From)
-* KPIs automáticos
-* Ordenação e paginação
-* Atualização mensal simples
-
-Sem Excel. Sem Power BI. Tudo via navegador.
-
----
-
-# 🏗 Arquitetura do Projeto
-
-```
-BI TELEFONIA/
+BI TELEFONIA
 │
-├── data/
-│   ├── raw/
-│   │   └── voice_calls.csv              ← Arquivo bruto mensal
-│   │
-│   └── processed/
-│       └── voice_calls_tratado.csv      ← Gerado automaticamente
+├─ data
+│  ├─ raw
+│  │  └─ national_rsw/        # arquivos .cdr baixados do FTP
+│  │
+│  └─ processed
+│     ├─ voice_calls.db      # banco SQLite (não versionado)
+│     └─ voice_calls_tratado.csv
 │
-├── src/
-│   └── transform.py                     ← ETL (tratamento do log)
+├─ src
+│  ├─ fetch_ftp_rsw.py       # baixa arquivos do FTP
+│  ├─ parse_cdr.py           # parser de arquivos CDR
+│  ├─ transform.py           # trata CSV internacional
+│  ├─ sqlite_ingest.py       # insere dados no SQLite
 │
-├── web/
-│   ├── backend/
-│   │   ├── app.py                       ← API FastAPI
-│   │   └── __init__.py
-│   │
-│   └── frontend/
-│       └── index.html                   ← Planilha web
+├─ web
+│  ├─ backend
+│  │  └─ app.py              # API FastAPI
+│  │
+│  └─ frontend
+│     └─ index.html          # dashboard web
 │
-├── .venv/
-└── requirements.txt
-```
+├─ requirements.txt
+└─ README.md
 
----
 
-# ⚙️ Tecnologias Utilizadas
+⚙️ Tecnologias utilizadas
 
-* Python 3.10+
-* FastAPI
-* Pandas
-* Uvicorn
-* HTML + CSS
-* Tabulator.js (planilha web)
+Python 3.12
 
----
+FastAPI
 
-# 🚀 Como Executar o Sistema
+SQLite
 
-## 1️⃣ Ativar o ambiente virtual
+Pandas
 
-### CMD:
+Tabulator.js
 
-```
-.\.venv\Scripts\activate.bat
-```
+Uvicorn
 
-### PowerShell:
+📊 Funcionalidades
 
-```
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+✔ Ingestão automática de chamadas nacionais via FTP
+✔ Importação de chamadas internacionais via CSV
+✔ Deduplicação automática de chamadas
+✔ Banco de dados SQLite otimizado para consultas
+✔ Dashboard web com:
+
+KPIs de chamadas
+
+Filtros por data
+
+Filtro por origem
+
+Filtro por país
+
+Paginação
+
+Tabela dinâmica
+
+🚀 Como rodar o projeto
+1️⃣ Clonar o repositório
+git clone <repo>
+cd BI-TELEFONIA
+2️⃣ Criar ambiente virtual
+python -m venv .venv
+Windows
 .\.venv\Scripts\Activate.ps1
-```
+3️⃣ Instalar dependências
+pip install -r requirements.txt
+🔑 Configurar acesso ao FTP
 
----
+Antes de rodar o sistema, configure as variáveis:
 
-## 2️⃣ Gerar o arquivo tratado
+$env:FTP_HOST="168.227.139.254"
+$env:FTP_USER="cdr"
+$env:FTP_PASS="SENHA"
+📥 Baixar chamadas nacionais
+python src/fetch_ftp_rsw.py
 
-Coloque o arquivo bruto em:
+Os arquivos serão salvos em:
 
-```
-data/raw/voice_calls.csv
-```
+data/raw/national_rsw
+🌍 Processar chamadas internacionais
 
-Depois execute:
+Coloque o CSV exportado em:
 
-```
-python src\transform.py
-```
+data/processed/voice_calls.csv
 
-Isso irá gerar:
+Depois rode:
 
-```
-data/processed/voice_calls_tratado.csv
-```
+python src/transform.py
 
----
+Isso gera:
 
-## 3️⃣ Iniciar o servidor web
+voice_calls_tratado.csv
+🗄 Inserir dados no banco
+python src/sqlite_ingest.py
 
-```
-python -m uvicorn web.backend.app:app --reload
-```
+Isso cria/atualiza:
 
-Acesse no navegador:
+data/processed/voice_calls.db
 
-```
-http://127.0.0.1:8000
-```
+O sistema evita duplicação usando:
 
----
+call_hash
 
-# 🔎 Funcionalidades da Planilha Web
+ingested_files
 
-✔ Filtro por data (início e fim)
-✔ Filtro por país
-✔ Busca por número de origem (From)
-✔ KPIs automáticos:
+🌐 Rodar o BI
+python -m uvicorn web.backend.app:app --host 0.0.0.0 --port 8000
 
-* Total gasto (R$)
-* Total de chamadas
-* Total de minutos
-* Custo médio por chamada
-* Custo por minuto
+Abrir no navegador:
 
-✔ Ordenação por coluna
-✔ Paginação automática
-✔ Atualização automática após novo processamento
+http://localhost:8000
+🔄 Atualização de dados
 
----
+Fluxo padrão:
 
-# 🔄 Atualização Mensal (Fluxo Oficial)
+python src/fetch_ftp_rsw.py
+python src/transform.py
+python src/sqlite_ingest.py
 
-Todo mês:
+Depois apenas recarregar o navegador.
 
-1. Substituir:
+🔐 Segurança
 
-   ```
-   data/raw/voice_calls.csv
-   ```
+O banco SQLite não é versionado no Git.
 
-2. Rodar:
+Arquivos ignorados:
 
-   ```
-   python src\transform.py
-   ```
+data/raw/
+data/processed/*.db
+data/processed/downloaded_files.txt
+.venv/
+📈 Estrutura do banco
 
-3. Atualizar o navegador (F5)
+Tabela principal:
 
-Pronto.
+calls
 
----
+Campos principais:
 
-# 🛠 Endpoints Disponíveis
+Connect time
+Disconnect time
+From
+To
+Country
+DurationSeconds
+Amount, BRL
+CallType
+SourceFile
 
-* `/` → Planilha Web
-* `/calls` → Dados + KPIs
-* `/filters` → Lista de países
-* `/debug` → Verificação do caminho do CSV
-* `/docs` → Documentação automática da API
+Tipos de chamada:
 
----
+National
+International
+👨‍💻 Autor
 
-# 📈 Próximas Evoluções Possíveis
-
-* Exportar Excel
-* Exportar CSV filtrado
-* Banco SQLite ao invés de CSV
-* Deploy em servidor interno
-* Deploy em VPS
-* Autenticação de usuários
-* Dashboard com gráficos adicionais
-
----
-
-# 🔒 Segurança
-
-* Dados não são enviados para terceiros
-* Sistema roda localmente ou na rede interna
-* Pode ser hospedado em servidor privado
-
----
-
-# 🧠 Resumo
-
-Você construiu um mini-BI web próprio:
-
-ETL → CSV Tratado → API → Planilha Interativa
-
-Sistema simples, eficiente e totalmente controlado por você.
-
----
-
-Projeto desenvolvido para análise estratégica de custos de telefonia internacional.
+Projeto desenvolvido para análise de tráfego telefônico e custos de chamadas.
