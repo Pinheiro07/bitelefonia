@@ -1,0 +1,234 @@
+/* ============================= */
+/* THEME VARIABLES */
+/* ============================= */
+
+:root {
+
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #0f172a;
+
+    --border: #334155;
+
+    --text-main: #e2e8f0;
+    --text-muted: #94a3b8;
+
+    --primary: #0f2a7a;
+    --accent: #ff7a00;
+
+}
+
+/* ============================= */
+/* BASE */
+/* ============================= */
+
+body {
+
+    font-family: system-ui, Arial, sans-serif;
+
+    margin: 20px;
+
+    background: var(--bg-main);
+
+    color: var(--text-main);
+
+}
+
+/* ============================= */
+/* HEADER */
+/* ============================= */
+
+h2 {
+
+    margin: 0;
+
+    font-weight: 600;
+
+}
+
+/* ============================= */
+/* ROW LAYOUT */
+/* ============================= */
+
+.row {
+
+    display: flex;
+
+    gap: 12px;
+
+    flex-wrap: wrap;
+
+    align-items: end;
+
+}
+
+/* ============================= */
+/* INPUTS */
+/* ============================= */
+
+label {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    font-size: 12px;
+
+    color: var(--text-muted);
+
+}
+
+input,
+select {
+
+    padding: 8px 10px;
+
+    border-radius: 8px;
+
+    border: 1px solid var(--border);
+
+    background: var(--bg-input);
+
+    color: var(--text-main);
+
+    min-width: 180px;
+
+}
+
+/* ============================= */
+/* BUTTONS */
+/* ============================= */
+
+button {
+
+    padding: 9px 14px;
+
+    border-radius: 8px;
+
+    border: none;
+
+    background: var(--accent);
+
+    color: white;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+}
+
+button:hover {
+
+    opacity: 0.9;
+
+}
+
+/* ============================= */
+/* KPI CARDS */
+/* ============================= */
+
+.card {
+
+    background: var(--bg-card);
+
+    border: 1px solid var(--border);
+
+    border-radius: 10px;
+
+    padding: 14px 16px;
+
+    min-width: 180px;
+
+}
+
+.k {
+
+    font-size: 12px;
+
+    color: var(--text-muted);
+
+}
+
+.v {
+
+    font-size: 22px;
+
+    font-weight: 700;
+
+    margin-top: 4px;
+
+}
+
+/* ============================= */
+/* TABLE */
+/* ============================= */
+
+#table {
+
+    margin-top: 16px;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+}
+
+/* ============================= */
+/* TABULATOR DARK TABLE */
+/* ============================= */
+
+.tabulator {
+    background: #1a1f2b;
+    border: 1px solid #2d3748;
+}
+
+/* header */
+
+.tabulator .tabulator-header {
+    background: var(--primary);
+    color: white;
+    border-bottom: 1px solid #2d3748;
+}
+
+/* TODAS as linhas iguais */
+
+.tabulator-row,
+.tabulator-row:nth-child(even),
+.tabulator-row:nth-child(odd) {
+    background: #1f2430 !important;
+    color: var(--text-main);
+}
+
+/* hover */
+
+.tabulator-row:hover {
+    background: #2a3142 !important;
+}
+
+/* células */
+
+.tabulator-cell {
+    border-right: 1px solid #2d3748;
+    border-bottom: 1px solid #2d3748;
+}
+
+/* remover qualquer zebra nativa */
+
+.tabulator-row.tabulator-row-even,
+.tabulator-row.tabulator-row-odd {
+    background: #1f2430 !important;
+}
+
+/* ============================= */
+/* PAGE INFO */
+/* ============================= */
+
+#page_info {
+
+    font-size: 12px;
+
+    color: var(--text-muted);
+
+}

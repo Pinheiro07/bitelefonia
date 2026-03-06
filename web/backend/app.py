@@ -57,6 +57,7 @@ def calls(
     from_number: Optional[str] = Query(default=None),
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=200, ge=50, le=5000),
+    to_number: Optional[str] = Query(default=None),
 ):
     if not DB_PATH.exists():
         return {
@@ -80,6 +81,9 @@ def calls(
     if from_number:
         where.append('"From" LIKE :from_like')
         params["from_like"] = f"%{from_number}%"
+    if to_number:
+       where.append('"To" LIKE :to_like')
+       params["to_like"] = f"%{to_number}%"
 
     where_sql = ("WHERE " + " AND ".join(where)) if where else ""
     offset = (page - 1) * page_size
@@ -113,7 +117,7 @@ def calls(
     cur.execute(f'''
         SELECT
             "Connect time","Disconnect time","From","To",Country,Description,
-            "Charged time, hour:min:sec",DurationSeconds,"Amount, BRL",CallType,SourceFile
+            DurationSeconds,"Amount, BRL",CallType,SourceFile
         FROM calls
         {where_sql}
         ORDER BY "Connect time" DESC

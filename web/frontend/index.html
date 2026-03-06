@@ -3,29 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="/static/css/style.css">
   <title>Voice Calls - Planilha Web</title>
 
   <link href="https://unpkg.com/tabulator-tables@6.3.0/dist/css/tabulator.min.css" rel="stylesheet">
   <script src="https://unpkg.com/tabulator-tables@6.3.0/dist/js/tabulator.min.js"></script>
 
   <style>
-    body { font-family: system-ui, Arial, sans-serif; margin: 20px; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
-    .card { border:1px solid #e5e5e5; border-radius:12px; padding:12px 14px; min-width:180px; }
-    .k { font-size:12px; opacity:.7; }
-    .v { font-size:20px; font-weight:700; }
-    label { display:flex; flex-direction:column; gap:6px; font-size:12px; }
-    input, select { padding:8px 10px; border-radius:10px; border:1px solid #ddd; min-width:180px; }
-    button { padding:9px 12px; border-radius:10px; border:1px solid #ddd; background:#f7f7f7; cursor:pointer; }
-    #table { margin-top: 14px; }
-    .top { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; }
-    h2 { margin:0; }
   </style>
 </head>
 <body>
   <div class="top">
-    <h2>Voice Calls — Planilha Web</h2>
-    <div style="font-size:12px;opacity:.7">Fonte: voice_calls_tratado.csv</div>
+    <h2>NEW CALLS</h2>
+    <div style="font-size:12px;opacity:.7">CDR de ligações</div>
   </div>
 
   <div class="row" style="margin-top:14px">
@@ -40,8 +30,13 @@
         <option value="">Todos</option>
       </select>
     </label>
-    <label>Buscar origem (From)
+   <label>Origem
   <input id="from_number" placeholder="ex: 2835...">
+</label>
+
+<label>Destino
+  <input id="to_number" placeholder="ex: 0289...">
+</label>
 </label>
 
     <button id="apply">Aplicar filtros</button>
@@ -80,7 +75,7 @@
   let PAGE = 1;
   let TOTAL_ROWS = 0;
 
-    const API = "http://localhost:8000";
+    const API = window.location.origin;
 
     const fmtMoney = (n) => (Number(n) || 0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
     const fmtNum = (n, d=0) => (Number(n) || 0).toLocaleString("pt-BR", { maximumFractionDigits:d, minimumFractionDigits:d });
@@ -100,7 +95,6 @@
         {title:"To", field:"To", sorter:"string"},
         {title:"Country", field:"Country", sorter:"string"},
         {title:"Description", field:"Description", sorter:"string"},
-        {title:"Charged time", field:"Charged time, hour:min:sec", sorter:"string"},
         {title:"DurationSeconds", field:"DurationSeconds", sorter:"number"},
         {title:"Amount (BRL)", field:"Amount, BRL", sorter:"number", formatter:(cell)=>fmtMoney(cell.getValue())},
       ],
@@ -126,7 +120,9 @@
       const country = document.getElementById("country").value;
       const from_number = document.getElementById("from_number").value;
       const page_size = document.getElementById("page_size").value;
+      const to_number = document.getElementById("to_number").value;
 
+      if (to_number) p.set("to_number", to_number);
       if (start) p.set("start", start);
       if (end) p.set("end", end);
       if (country) p.set("country", country);
