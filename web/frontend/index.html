@@ -31,7 +31,7 @@
       </select>
     </label>
    <label>Origem
-  <input id="from_number" placeholder="ex: 2835...">
+  <input id="from_number" placeholder="ex: 2821015656, 2835219010">
 </label>
 
 <label>Destino
@@ -89,15 +89,15 @@
       resizableColumns: true,
       placeholder: "Sem dados",
       columns: [
-        {title:"Connect time", field:"Connect time", sorter:"string"},
-        {title:"Disconnect time", field:"Disconnect time", sorter:"string"},
+        {title:"Data/Hora Início", field:"Connect time", sorter:"string", formatter:(cell) => fmtDateBR(cell.getValue())},
+        {title:"Data/Hora Fim", field:"Disconnect time", sorter:"string", formatter:(cell) => fmtDateBR(cell.getValue())},
         {title:"From", field:"From", sorter:"string"},
         {title:"To", field:"To", sorter:"string"},
         {title:"Country", field:"Country", sorter:"string"},
         {title:"Description", field:"Description", sorter:"string"},
-        {title:"DurationSeconds", field:"DurationSeconds", sorter:"number"},
+        {title:"Duração (min)", field:"DurationSeconds", sorter:"number", formatter:(cell) => fmtMinutesFromSeconds(cell.getValue())},
         {title:"Amount (BRL)", field:"Amount, BRL", sorter:"number", formatter:(cell)=>fmtMoney(cell.getValue())},
-      ],
+      ]
     });
 
     async function loadCountries() {
@@ -111,6 +111,29 @@
         sel.appendChild(opt);
       });
     }
+
+    function fmtDateBR(value) {
+  if (!value) return "";
+  const s = String(value).trim();
+
+  // espera algo como: 2026-03-04 19:28:02
+  const [datePart, timePart = ""] = s.split(" ");
+  const [y, m, d] = datePart.split("-");
+
+  if (!y || !m || !d) return value;
+
+  return `${d}/${m}/${y}${timePart ? " " + timePart : ""}`;
+}
+
+function fmtMinutesFromSeconds(value) {
+  const seconds = Number(value) || 0;
+  const minutes = seconds / 60;
+  return minutes.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
 
     function qs() {
       const p = new URLSearchParams();
